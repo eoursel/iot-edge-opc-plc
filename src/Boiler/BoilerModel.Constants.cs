@@ -71,11 +71,6 @@ namespace BoilerModel
     public static partial class Objects
     {
         /// <summary>
-        /// The identifier for the Boiler1 Object.
-        /// </summary>
-        public const uint Boiler1 = 15070;
-
-        /// <summary>
         /// The identifier for the BoilerDataType_Encoding_DefaultBinary Object.
         /// </summary>
         public const uint BoilerDataType_Encoding_DefaultBinary = 15072;
@@ -139,11 +134,6 @@ namespace BoilerModel
         /// The identifier for the BoilerType_BoilerStatus Variable.
         /// </summary>
         public const uint BoilerType_BoilerStatus = 15003;
-
-        /// <summary>
-        /// The identifier for the Boiler1_BoilerStatus Variable.
-        /// </summary>
-        public const uint Boiler1_BoilerStatus = 15013;
 
         /// <summary>
         /// The identifier for the Boiler_BinarySchema Variable.
@@ -231,11 +221,6 @@ namespace BoilerModel
     public static partial class ObjectIds
     {
         /// <summary>
-        /// The identifier for the Boiler1 Object.
-        /// </summary>
-        public static readonly ExpandedNodeId Boiler1 = new ExpandedNodeId(BoilerModel.Objects.Boiler1, BoilerModel.Namespaces.Boiler);
-
-        /// <summary>
         /// The identifier for the BoilerDataType_Encoding_DefaultBinary Object.
         /// </summary>
         public static readonly ExpandedNodeId BoilerDataType_Encoding_DefaultBinary = new ExpandedNodeId(BoilerModel.Objects.BoilerDataType_Encoding_DefaultBinary, BoilerModel.Namespaces.Boiler);
@@ -299,11 +284,6 @@ namespace BoilerModel
         /// The identifier for the BoilerType_BoilerStatus Variable.
         /// </summary>
         public static readonly ExpandedNodeId BoilerType_BoilerStatus = new ExpandedNodeId(BoilerModel.Variables.BoilerType_BoilerStatus, BoilerModel.Namespaces.Boiler);
-
-        /// <summary>
-        /// The identifier for the Boiler1_BoilerStatus Variable.
-        /// </summary>
-        public static readonly ExpandedNodeId Boiler1_BoilerStatus = new ExpandedNodeId(BoilerModel.Variables.Boiler1_BoilerStatus, BoilerModel.Namespaces.Boiler);
 
         /// <summary>
         /// The identifier for the Boiler_BinarySchema Variable.
@@ -373,11 +353,6 @@ namespace BoilerModel
         /// The BrowseName for the Boiler_XmlSchema component.
         /// </summary>
         public const string Boiler_XmlSchema = "BoilerModel";
-
-        /// <summary>
-        /// The BrowseName for the Boiler1 component.
-        /// </summary>
-        public const string Boiler1 = "Boiler #1";
 
         /// <summary>
         /// The BrowseName for the BoilerDataType component.

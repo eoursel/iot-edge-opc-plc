@@ -146,6 +146,9 @@ namespace OpcPlc
                 if (instance.Parent.NodeId.Identifier is string id)
                 {
                     return new NodeId(id + "_" + instance.SymbolicName, instance.Parent.NodeId.NamespaceIndex);
+                } else if (instance.Parent.NodeId.Identifier is uint idi)
+                {
+                    return new NodeId(idi + 1, instance.Parent.NodeId.NamespaceIndex);
                 }
             }
 
@@ -258,12 +261,24 @@ namespace OpcPlc
                         LoadPredefinedNodes(SystemContext, externalReferences);
 
                         // Find the Boiler1 node that was created when the model was loaded.
-                        var passiveNode = (BaseObjectState)FindPredefinedNode(new NodeId(BoilerModel.Objects.Boiler1, NamespaceIndexes[(int)NamespaceType.Boiler]), typeof(BaseObjectState));
+                        // var passiveNode = (BaseObjectState)FindPredefinedNode(new NodeId(BoilerModel.Objects.Boiler1, NamespaceIndexes[(int)NamespaceType.Boiler]), typeof(BaseObjectState));
 
                         // Convert to node that can be manipulated within the server.
                         _boiler1 = new BoilerModel.BoilerState(null);
-                        _boiler1.Create(SystemContext, passiveNode);
+                        // _boiler1.Create(SystemContext, passiveNode);
+                        ushort namespaceIndex = NamespaceIndexes[(int)NamespaceType.BoilerInstance];
+                        NodeId id = new NodeId(20000, namespaceIndex);
+                        _boiler1.Create(SystemContext, id, new QualifiedName("BoilerInstance1", namespaceIndex), new LocalizedText("BoilerInstance1"), true);
 
+                        // link root to objects folder.
+                    
+
+                        if (!externalReferences.TryGetValue(Opc.Ua.ObjectIds.ObjectsFolder, out references))
+                        {
+                            externalReferences[Opc.Ua.ObjectIds.ObjectsFolder] = references = new List<IReference>();
+                        }
+
+                        references.Add(new NodeStateReference(Opc.Ua.ReferenceTypeIds.Organizes, false, _boiler1.NodeId));
                         AddPredefinedNode(SystemContext, _boiler1);
 
                         // Create heater on/off methods.

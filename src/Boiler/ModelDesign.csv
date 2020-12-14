@@ -9,12 +9,10 @@ Boiler_XmlSchema_BoilerTemperatureType,15009,Variable
 Boiler_XmlSchema_BoilerTemperatureType_DataTypeVersion,15010,Variable
 Boiler_XmlSchema_BoilerTemperatureType_DictionaryFragment,15011,Variable
 BoilerTemperatureType_Encoding_DefaultJson,15012,Object
-Boiler1_BoilerStatus,15013,Variable
 BoilerHeaterStateType,15014,DataType
 BoilerHeaterStateType_EnumStrings,15015,Variable
 BoilerDataType,15032,DataType
 BoilerType,15068,ObjectType
-Boiler1,15070,Object
 BoilerDataType_Encoding_DefaultBinary,15072,Object
 Boiler_BinarySchema,15074,Variable
 Boiler_BinarySchema_DataTypeVersion,15075,Variable
