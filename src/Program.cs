@@ -91,6 +91,8 @@
         /// </summary>
         public static bool AddComplexTypeBoiler { get; set; }
 
+        public static string CompiledModels {get; set;}
+
         /// <summary>
         /// Web server port for hosting OPC Publisher file.
         /// </summary>
@@ -313,6 +315,8 @@
                 { "ctb|complextypeboiler", $"add complex type (boiler) to address space.\nDefault: {AddComplexTypeBoiler}", h => AddComplexTypeBoiler = h != null },
                 { "wp|webport=", $"web server port for hosting OPC Publisher configuration file.\nDefault: {WebServerPort}", (uint i) => WebServerPort = i },
                 { "h|help", "show this message and exit", h => shouldShowHelp = h != null },
+                // custommodels
+                { "cm|custommodel=", "load a custom model", (string s) => CompiledModels = s}
             };
 
             // Init app location

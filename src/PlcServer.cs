@@ -31,11 +31,32 @@ namespace OpcPlc
                 Logger.Error(errorMessage);
                 throw new Exception(errorMessage);
             }
-
+            
             // Add encodable complex types.
             server.Factory.AddEncodeableTypes(Assembly.GetExecutingAssembly());
+            string targetNamespace =  Opc.Ua.Namespaces.OpcUa;
+            if (CompiledModels != null)
+              {
+                        Assembly loadedAssembly = Assembly.LoadFile(CompiledModels);
+                        Logger.Information($"Loaded assembly {loadedAssembly.FullName}");
+                        server.Factory.AddEncodeableTypes(loadedAssembly);
+                      
+                        foreach (var t in loadedAssembly.DefinedTypes)
+                        {
+                            if (t.FullName.EndsWith(".Namespaces"))
+                            {
+                                foreach (var f in t.GetFields())
+                                {
+                                    Logger.Information($"Namespace {f.Name} {f.GetRawConstantValue()}");
+                                    targetNamespace = f.GetRawConstantValue() as string; 
+                                }
+                            }
 
-            PlcNodeManager = new PlcNodeManager(server, configuration, NodesFileName);
+                        }
+                        PlcNodeManager = new PlcNodeManager(server,configuration, loadedAssembly, targetNamespace, NodesFileName);    
+              }
+              else
+                PlcNodeManager = new PlcNodeManager(server, configuration, NodesFileName);
             nodeManagers.Add(PlcNodeManager);
             var masterNodeManager = new MasterNodeManager(server, configuration, null, nodeManagers.ToArray());
 

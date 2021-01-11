@@ -68,6 +68,15 @@ namespace OpcPlc
             SystemContext.NodeIdFactory = this;
         }
 
+        public PlcNodeManager(IServerInternal server, ApplicationConfiguration configuration, Assembly customAssembly, string customNamespace, string nodeFileName = null)
+            : base(server, configuration, new string[] { Namespaces.OpcPlcApplications, Namespaces.OpcPlcBoiler, Namespaces.OpcPlcBoilerInstance, customNamespace,customNamespace+"Instance"})
+        {
+            _nodeFileName = nodeFileName;
+            _customAssembly = customAssembly;
+            _customNamespaceInstance = customNamespace + "Instance";
+            SystemContext.NodeIdFactory = this;
+        }
+
 #pragma warning disable IDE0060 // Remove unused parameter
         public void IncreaseSlowNodes(object state)
 #pragma warning restore IDE0060 // Remove unused parameter
@@ -136,11 +145,13 @@ namespace OpcPlc
             _boiler1.BoilerStatus.ClearChangeMasks(SystemContext, includeChildren: true);
         }
 
+        static ushort incr = 1;
         /// <summary>
         /// Creates the NodeId for the specified node.
         /// </summary>
         public override NodeId New(ISystemContext context, NodeState node)
         {
+            
             if (node is BaseInstanceState instance && instance.Parent != null)
             {
                 if (instance.Parent.NodeId.Identifier is string id)
@@ -148,7 +159,8 @@ namespace OpcPlc
                     return new NodeId(id + "_" + instance.SymbolicName, instance.Parent.NodeId.NamespaceIndex);
                 } else if (instance.Parent.NodeId.Identifier is uint idi)
                 {
-                    return new NodeId(idi + 1, instance.Parent.NodeId.NamespaceIndex);
+                    return new NodeId(idi + incr++, instance.Parent.NodeId.NamespaceIndex);
+                    
                 }
             }
 
@@ -255,10 +267,57 @@ namespace OpcPlc
                         Logger.Information("Processing node information completed.");
                     }
 
+                    if (CompiledModels != null)
+                    {
+                      
+                        Logger.Information($"Loaded assembly {_customAssembly.FullName}");
+                         foreach (var t in _customAssembly.GetManifestResourceNames())
+                         {
+                             Logger.Information($"Resource Name: {t}");
+                             if (t.EndsWith(".uanodes")) 
+                              {
+                                  Logger.Information($"Loading nodes from {t}");
+                                _custommodelpath = t;
+
+                              }
+                        
+                         }
+                         foreach (var t in _customAssembly.GetExportedTypes())
+                        {
+                            Logger.Information($"Exported Type: {t}");
+                            if (t.Name.Equals("InstanceFactory"))
+                            {
+                                _customfactory = t;
+                                Logger.Information($"Initialized instance factory with type {t}");
+                            }
+                            
+                        }
+                               
+                    }
+
+                    if (AddComplexTypeBoiler || (CompiledModels!= null))
+                    {
+                        LoadPredefinedNodes(SystemContext, externalReferences);
+                        if (_customfactory != null)
+                        {
+                            ushort namespaceIndex = NamespaceIndexes[(int)NamespaceType.BoilerInstance+2];
+                            MethodInfo createInstance = _customfactory.GetMethod("Create");
+                            ushort startid = 10000;
+                            var instance = createInstance.Invoke(null, new object[] { "tricycle01", SystemContext, startid, namespaceIndex }) as NodeState;
+                            if (!externalReferences.TryGetValue(Opc.Ua.ObjectIds.ObjectsFolder, out references))
+                            {
+                                externalReferences[Opc.Ua.ObjectIds.ObjectsFolder] = references = new List<IReference>();
+                            }
+                            references.Add(new NodeStateReference(Opc.Ua.ReferenceTypeIds.Organizes, false, instance.NodeId));
+                            AddPredefinedNode(SystemContext, instance);
+                        }
+
+                    }
+                       
                     if (AddComplexTypeBoiler)
                     {
                         // Load complex types from binary uanodes file.
-                        LoadPredefinedNodes(SystemContext, externalReferences);
+                        
 
                         // Find the Boiler1 node that was created when the model was loaded.
                         // var passiveNode = (BaseObjectState)FindPredefinedNode(new NodeId(BoilerModel.Objects.Boiler1, NamespaceIndexes[(int)NamespaceType.Boiler]), typeof(BaseObjectState));
@@ -541,11 +600,15 @@ namespace OpcPlc
         protected override NodeStateCollection LoadPredefinedNodes(ISystemContext context)
         {
             var predefinedNodes = new NodeStateCollection();
-
-            predefinedNodes.LoadFromBinaryResource(context,
+            if (AddComplexTypeBoiler)
+                predefinedNodes.LoadFromBinaryResource(context,
                 "Boiler/BoilerModel.PredefinedNodes.uanodes", // CopyToOutputDirectory -> PreserveNewest.
                 typeof(PlcNodeManager).GetTypeInfo().Assembly,
                 updateTables: true);
+
+            if (CompiledModels != null)
+                predefinedNodes.LoadFromBinaryResource(context,
+                    _custommodelpath, _customAssembly, updateTables: true);
 
             return predefinedNodes;
         }
@@ -841,5 +904,9 @@ namespace OpcPlc
         /// File name for user configurable nodes.
         /// </summary>
         protected string _nodeFileName = null;
+        private Assembly _customAssembly;
+        private string _customNamespaceInstance;
+        private string _custommodelpath;
+        private Type _customfactory;
     }
 }
